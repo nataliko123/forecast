@@ -1,3 +1,8 @@
+@import url("https://fonts.cdnfonts.com/css/nrk-sans-2");
+
+body {
+  padding-inline: 100px;
+}
 :root {
   --background: #ffffff;
   --foreground: #171717;
