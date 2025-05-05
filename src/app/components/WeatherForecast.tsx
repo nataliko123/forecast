@@ -33,32 +33,62 @@ const ForecastTable = styled.div`
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: 180px repeat(4, 1fr) 150px 100px;
+  grid-template-columns: 200px 280px 150px 100px 80px;
   align-items: center;
-  padding: 15px;
+  padding: 12px 15px;
   background: #fff;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  font-size: 15px;
+
   &:first-child {
     font-weight: bold;
     background: #f0f6ff;
+    color: #333;
+  }
+
+  div, span {
+    text-align: center;
+  }
+
+  & > div:first-child {
+    text-align: left;
+    font-weight: bold;
+    color: #000;
   }
 `;
 
+const TimeLabels = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  font-weight: bold;
+  font-size: 13px;
+  color: #333;
+`;
+
+const IconsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 6px;
+`;
+
 const WeatherIcon = styled.img`
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
 `;
 
 const Temperature = styled.span`
-  color: red;
+  color: #d80000;
   font-weight: bold;
 `;
 
 const Precip = styled.span`
-  color: #0077cc;
+  color: #005ea8;
 `;
 
 const Wind = styled.span`
+  color: #333;
   font-weight: 500;
 `;
 
@@ -137,26 +167,35 @@ const WeatherForecast = () => {
       </ToggleTabs>
 
       <ForecastTable>
-        <Row className="row-element">
-          <div>Night</div>
-          <div>Morning</div>
-          <div>Afternoon</div>
-          <div>Evening</div>
-          <div>Temperature high/low</div>
+        <Row>
+          <div>Day</div>
+          <div>
+            <TimeLabels>
+              <div>Night</div>
+              <div>Morning</div>
+              <div>Afternoon</div>
+              <div>Evening</div>
+            </TimeLabels>
+          </div>
+          <div>Temp</div>
           <div>Precip.</div>
           <div>Wind</div>
         </Row>
 
         {data.map((item, index) => (
           <Row key={index}>
-            <strong>{item.day}</strong>
-            {item.icons.map((icon, idx) => (
-              <WeatherIcon
-                key={idx}
-                src={`https://example.com/icons/${icon}.png`}
-                alt={icon}
-              />
-            ))}
+            <div>{item.day}</div>
+            <div>
+              <IconsContainer>
+                {item.icons.map((icon, idx) => (
+                  <WeatherIcon
+                    key={idx}
+                    src={`https://example.com/icons/${icon}.png`}
+                    alt={icon}
+                  />
+                ))}
+              </IconsContainer>
+            </div>
             <Temperature>{item.temp}</Temperature>
             <Precip>{item.precip}</Precip>
             <Wind>{item.wind}</Wind>
