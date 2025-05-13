@@ -1,16 +1,65 @@
 "use client";
-
 import styled from "styled-components";
 import { FaSearch, FaBars, FaStar, FaRegStar } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import LogoIcon from "../Icons/headerlogo";
 
-export default function Header() {
+interface HeaderProps {
+  location: string;
+  setLocation: (location: string) => void;
+  searchLocation: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  currentData: {
+    name: string;
+    temp: number;
+    feels_like: number;
+    wind_speed: number;
+    rain?: { "1h": number };
+    weather?: string;
+  } | null;
+}
+
+export default function Header({ location, setLocation, searchLocation, currentData }: HeaderProps) {
   const [starred, setStarred] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null); // Ref to track the dropdown
+  const searchInputRef = useRef<HTMLInputElement>(null); // Ref to track the search input
 
   const toggleStar = () => setStarred((prev) => !prev);
   const toggleSearchDropdown = () => setShowSearchDropdown((prev) => !prev);
+
+  // Handle clicks outside the dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false); // Close dropdown if click is outside
+      }
+    };
+
+    // Add event listener when dropdown is open
+    if (showSearchDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup event listener on unmount or when dropdown closes
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSearchDropdown]);
+
+  // Focus the search input when dropdown opens
+  useEffect(() => {
+    if (showSearchDropdown && searchInputRef.current) {
+      searchInputRef.current.focus(); // Programmatically focus the input
+    }
+  }, [showSearchDropdown]);
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (typeof setLocation === "function") {
+      setLocation(e.target.value);
+    } else {
+      console.error("setLocation is not a function");
+    }
+  };
 
   return (
     <Wrapper>
@@ -18,32 +67,34 @@ export default function Header() {
         <LogoWrapper>
           <LogoIcon />
         </LogoWrapper>
-
         <FlexibleArea>
           {!showSearchDropdown ? (
             <TextContainer>
               <Location>
-                Tbilisi
+                {currentData ? currentData.name : "Search for a city"}
                 <StarButton onClick={toggleStar}>
-                  {starred ? (
-                    <FaStar color="#e59100" />
-                  ) : (
-                    <FaRegStar color="#888" />
-                  )}
+                  {starred ? <FaStar color="#e59100" /> : <FaRegStar color="#888" />}
                 </StarButton>
               </Location>
-              <SubText>Capital (Georgia)</SubText>
+              <SubText>Enter a city name to see weather</SubText>
             </TextContainer>
           ) : (
-            <DropdownBox>
-              <DropdownInput placeholder="Search by location or coordinates" />
+            <DropdownBox ref={dropdownRef}>
+              <SearchInput
+                ref={searchInputRef} // Attach ref to SearchInput
+                autoFocus // Automatically focus the input when rendered
+                placeholder="Search by location or coordinates"
+                value={location}
+                onChange={handleLocationChange}
+                onKeyDown={searchLocation}
+              />
               <SuggestionList>
                 <NearbyItem>📍 Nearby</NearbyItem>
                 <SuggestionItem>
                   <ClockIcon>🕒</ClockIcon>
                   <SuggestionText>
-                    <strong>Tbilisi</strong>
-                    <div className="sub">Capital (Georgia)</div>
+                    <strong>Recent searches</strong>
+                    <div className="sub">Search for a city above</div>
                   </SuggestionText>
                 </SuggestionItem>
               </SuggestionList>
@@ -51,7 +102,6 @@ export default function Header() {
           )}
         </FlexibleArea>
       </LeftSection>
-
       <RightSection>
         <Button onClick={toggleSearchDropdown}>
           <FaSearch /> Search
@@ -63,8 +113,6 @@ export default function Header() {
     </Wrapper>
   );
 }
-
-// Styled Components
 
 const Wrapper = styled.header`
   margin-top: 3.2rem;
@@ -94,10 +142,9 @@ const LogoWrapper = styled.div`
   align-items: center;
   margin-right: 12px;
 
-  svg {
+  img {
     width: 24px;
     height: 24px;
-    fill: white;
   }
 `;
 
@@ -119,6 +166,7 @@ const Location = styled.div`
   font-size: 1.1rem;
   display: flex;
   align-items: center;
+  color: black;
 `;
 
 const StarButton = styled.button`
@@ -167,7 +215,7 @@ const Button = styled.button`
 
 const DropdownBox = styled.div`
   position: absolute;
-  top: 100%; /* Places dropdown directly below the search bar */
+  top: 100%;
   left: 0;
   width: 100%;
   background-color: #ffffff;
@@ -176,18 +224,19 @@ const DropdownBox = styled.div`
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  z-index: 100; /* Ensures it stays on top */
+  z-index: 100;
 `;
 
-const DropdownInput = styled.input`
+const SearchInput = styled.input`
   width: 100%;
   padding: 12px;
   font-size: 1rem;
+  background-color: #ffffff;
   border: 2px solid #0071e3;
   border-radius: 8px;
   margin-bottom: 1rem;
   outline: none;
-
+  color:black;
   &:focus {
     border-color: #005bb5;
   }
